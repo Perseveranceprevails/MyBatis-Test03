@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.lucky.dao.IUserDAO">
+    <select id="getUserList" resultType="cn.lucky.entity.User" >
+        SELECT * FROM smbms_user
+        <!--<where>
+            <if test="userName !=null and userName !='' ">
+                and userName LIKE CONCAT ('%',#{userName},'%')
+            </if>
+            <if test="userRole!=null">
+                and userRole=#{userRole}
+            </if>
+        </where>-->
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="userName !=null and userName !='' ">
+                and userName LIKE CONCAT ('%',#{userName},'%')
+            </if>
+            <if test="userRole!=null">
+                and userRole=#{userRole}
+            </if>
+        </trim>
+    </select>
+
+    <update id="mpdifyUserInfo" parameterType="cn.lucky.entity.User">
+
+    </update>
+
+    <select id="getUserListByRoleId" resultType="cn.lucky.entity.User">
+        SELECT * FROM smbms_user WHERE userRole in
+           <foreach collection="array" item="roleIds" open="(" separator="," close=")">
+               #{roleIds}
+           </foreach>
+    </select>
+
+    <select id="getUserListByRoleIds" resultType="cn.lucky.entity.User">
+        SELECT * FROM smbms_user WHERE userRole in
+        <foreach collection="roleIds" item="roleMap" open="(" separator="," close=")">
+            #{roleMap}
+        </foreach>
+    </select>
+
+    <select id="getUserListByCondis" resultType="cn.lucky.entity.User">
+        SELECT * from smbms_user where 1=1
+          <choose>
+              <when test="userName !=null and userName!=''">
+                  and userName like CONCAT('%',#{userName},'%')
+              </when>
+              <when test="userCode !=null and userCode !=''">
+                  and userCode like CONCAT('%',#{userCode},'%')
+              </when>
+              <when test="userRole !=null">
+                  and userRole=#{userRole}
+              </when>
+          </choose>
+    </select>
+
+    <!--分页-->
+    <select id="getUserListByPage" resultMap="userList">
+        SELECT u.*,r.id as r_id FROM smbms_user AS u,smbms_role AS r WHERE u.userRole=r.id
+          <if test="userRole !=null and userRole!=''">
+              and u.userRole=#{userRole}
+          </if>
+          <if test="userName !=null and userName!=''">
+              and u.userName like CONCAT ('%',#{userName},'%')
+          </if>
+         limit #{from},#{pageSize}
+    </select>
+    <resultMap id="userList" type="cn.lucky.entity.User">
+        <id property="id" column="id"/>
+
+
+        <result property="userName" column="userName"/>
+
+        <result property="userRole" column="r_id"/>
+    </resultMap>
+
+</mapper>
